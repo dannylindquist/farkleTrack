@@ -1,14 +1,3 @@
-/**
- * This file provided by Facebook is for non-commercial testing and evaluation
- * purposes only. Facebook reserves all rights not expressly granted.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
- * FACEBOOK BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
- * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
 var Score = React.createClass({
   render: function() {
     return (
@@ -31,7 +20,7 @@ var Comment = React.createClass({
     
 
     return (
-      <div className="comment col-md-2 col-sm-2 col-xs-3">
+      <div className="comment col-md-2 col-sm-2 col-xs-6">
         <h2 className="commentAuthor">
           {this.props.name}
         </h2>
@@ -110,7 +99,7 @@ var CommentBox = React.createClass({
         <form className="form-inline" onSubmit={this.handleSubmit}>
           <h1>Scores
           <small>
-            <button className=" btn btn-mini btn-danger" type="submit">Clear</button>
+            <button className="pull-right btn btn-small btn-danger" type="submit">Clear</button>
           </small>
           </h1>
         </form>

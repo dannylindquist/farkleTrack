@@ -4,7 +4,7 @@ var Welcome = React.createClass({
 			<div className="text-default">
 				<h1>Play Farkle</h1>
 			</div>
-			<Games url={this.props.url}/>
+			<Games url={this.props.url} />
 		);
 	}
 
