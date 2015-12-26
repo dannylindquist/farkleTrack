@@ -84,7 +84,8 @@ app.post('/api/clear', function(req, res){
         console.error(err);
         process.exit(1);
       }
-      res.redirect('index.html');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.json(scores);
     });
   });
 });

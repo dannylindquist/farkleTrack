@@ -87,10 +87,27 @@ var CommentBox = React.createClass({
     this.loadCommentsFromServer();
     setInterval(this.loadCommentsFromServer, this.props.pollInterval);
   },
+  handleSubmit: function(e) {
+    e.preventDefault();
+    this.setState({data: []});
+    $.ajax({
+      url: '/api/clear',
+      dataType: 'json',
+      type: 'POST',
+      data: [],
+      success: function(data) {
+        this.setState({data: data});
+      }.bind(this),
+      error: function(xhr, status, err) {
+        this.setState({data: comments});
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
+  },
   render: function() {
     return (
       <div className="commentBox">
-        <form className="form-inline" action="/api/clear" method="POST">
+        <form className="form-inline" onSubmit={this.handleSubmit}>
           <h1>Scores
           <small>
             <button className=" btn btn-mini btn-danger" type="submit">Clear</button>
