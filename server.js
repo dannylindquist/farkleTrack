@@ -71,6 +71,24 @@ app.post('/api/scores', function(req, res) {
   });
 });
 
+app.post('/api/clear', function(req, res){
+  fs.readFile(SCORES_FILE, function(err, data) {
+    if (err) {
+      console.error(err);
+      process.exit(1);
+    }
+    var scores = [];
+     
+    fs.writeFile(SCORES_FILE, JSON.stringify(scores, null, 4), function(err) {
+      if (err) {
+        console.error(err);
+        process.exit(1);
+      }
+      res.redirect('index.html');
+    });
+  });
+});
+
 
 app.listen(app.get('port'), function() {
   console.log('Server started: http://localhost:' + app.get('port') + '/');

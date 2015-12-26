@@ -90,7 +90,13 @@ var CommentBox = React.createClass({
   render: function() {
     return (
       <div className="commentBox">
-        <h1>Scores</h1>
+        <form className="form-inline" action="/api/clear" method="POST">
+          <h1>Scores
+          <small>
+            <button className=" btn btn-mini btn-danger" type="submit">Clear</button>
+          </small>
+          </h1>
+        </form>
         <CommentForm onCommentSubmit={this.handleCommentSubmit} />
         <CommentList data={this.state.data} />
       </div>
