@@ -35,7 +35,7 @@ app.post('/api/scores', function(req, res) {
     var found = false;
     scores.map(function(data){
       if (data.name == req.body.name) {
-        data.history.push(data.score);
+        data.history.unshift(data.score);
         data.score = data.score + Number(req.body.score);
         found = true;
       }

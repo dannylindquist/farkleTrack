@@ -7,12 +7,13 @@ var Score = React.createClass({
 });
 
 var Comment = React.createClass({
-  handleClick: function(data){
-    document.getElementById('nameField').value = data;
+  handleClick: function(){
+    this.props.setName(this.props.name);
+    document.getElementById('scoreField').focus();
   },
   render: function() {
     if (this.props.history) {
-      var scores = this.props.history.reverse().map(function(data){
+      var scores = this.props.history.map(function(data){
         return (
           <Score key={data} data={data}/>
         );
@@ -27,10 +28,10 @@ var Comment = React.createClass({
     } else {
       behindVal = ' (-' + (Number(this.props.maxVal) - Number(this.props.children)) + ')';
     }
-    var clickEvent = '"getElementById(\'nameField\').value = "' + String(this.props.name);
+
     return (
       <div className="comment col-md-2 col-sm-4 col-xs-6">
-        <h2 className={winner} onClick={clickEvent}>
+        <h2 className={winner} onClick={this.handleClick}>
           {this.props.name}
         </h2>
         
@@ -71,16 +72,16 @@ var CommentBox = React.createClass({
       type: 'POST',
       data: comment,
       success: function(data) {
-        this.setState({data: data});
+        this.setState({data: data, name: ''});
       }.bind(this),
       error: function(xhr, status, err) {
-        this.setState({data: comments});
+        this.setState({data: comments, name: ''});
         console.error(this.props.url, status, err.toString());
       }.bind(this)
     });
   },
   getInitialState: function() {
-    return {data: []};
+    return {data: [], name: ''};
   },
   componentDidMount: function() {
     this.loadCommentsFromServer();
@@ -103,6 +104,9 @@ var CommentBox = React.createClass({
       }.bind(this)
     });
   },
+  handleTextChange: function(input) {
+    this.setState({name: input});
+  },
   render: function() {
     return (
       <div className="commentBox">
@@ -113,8 +117,8 @@ var CommentBox = React.createClass({
           </small>
           </h1>
         </form>
-        <CommentForm onCommentSubmit={this.handleCommentSubmit} />
-        <CommentList data={this.state.data} />
+        <CommentForm onCommentSubmit={this.handleCommentSubmit} name={this.state.name} textChange={this.handleTextChange} />
+        <CommentList data={this.state.data} setText={this.handleTextChange}/>
       </div>
     );
   }
@@ -128,10 +132,14 @@ var CommentList = React.createClass({
         maxVal = data.score;
       };
     });
+    var textSet = this.props.setText;
     var commentNodes = this.props.data.map(function(comment) {
+      var setParentName = function(value){
+        textSet(value);
+      };
       var max = (maxVal === comment.score);
       return (
-        <Comment name={comment.name} history={comment.history} key={comment.id} max={max} maxVal={maxVal}>
+        <Comment name={comment.name} history={comment.history} key={comment.id} max={max} maxVal={maxVal} setName={setParentName}>
           {comment.score}
         </Comment>
       );
@@ -146,23 +154,23 @@ var CommentList = React.createClass({
 
 var CommentForm = React.createClass({
   getInitialState: function() {
-    return {name: '', score: 0, history:[]};
-  },
-  handleAuthorChange: function(e) {
-    this.setState({name: e.target.value});
+    return {score: '', history:[]};
   },
   handleTextChange: function(e) {
     this.setState({score: e.target.value});
   },
+  handleNameChange: function(e) {
+    this.props.textChange(String(e.target.value));
+  },
   handleSubmit: function(e) {
     e.preventDefault();
-    var name = this.state.name.trim();
+    var name = String(this.props.name).trim();
     var score = this.state.score.trim();
     if (!name || !score) {
       return;
     }
     this.props.onCommentSubmit({name: name, score: score});
-    this.setState({name: '', score: 0, history:[]});
+    this.setState({score: '', history:[]});
   },
   render: function() {
     return (
@@ -173,13 +181,14 @@ var CommentForm = React.createClass({
           type="text"
           placeholder="Name"
           id="nameField"
-          value={this.state.name}
-          onChange={this.handleAuthorChange}
+          value={this.props.name}
+          onChange={this.handleNameChange}
         />
         <input
           className="form-control"
           type="number"
           placeholder="Score..."
+          id="scoreField"
           value={this.state.score}
           onChange={this.handleTextChange}
         />
