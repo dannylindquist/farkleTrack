@@ -7,6 +7,9 @@ var Score = React.createClass({
 });
 
 var Comment = React.createClass({
+  handleClick: function(data){
+    document.getElementById('nameField').value = data;
+  },
   render: function() {
     if (this.props.history) {
       var scores = this.props.history.reverse().map(function(data){
@@ -17,15 +20,22 @@ var Comment = React.createClass({
     } else {
       var scores = "0"
     }
-    
-
+    var winner = 'commentAuthor';
+    var behindVal = '';
+    if (this.props.max) {
+      winner += ' text-success';
+    } else {
+      behindVal = ' (-' + (Number(this.props.maxVal) - Number(this.props.children)) + ')';
+    }
+    var clickEvent = '"getElementById(\'nameField\').value = "' + String(this.props.name);
     return (
-      <div className="comment col-md-2 col-sm-2 col-xs-6">
-        <h2 className="commentAuthor">
+      <div className="comment col-md-2 col-sm-4 col-xs-6">
+        <h2 className={winner} onClick={clickEvent}>
           {this.props.name}
         </h2>
+        
         <div>
-          <h2><small>{this.props.children.toString()}</small></h2>
+          <h2><small>{this.props.children.toString()}<sub>{behindVal}</sub></small></h2>
         </div>
         <blockquote>
           {scores}
@@ -112,9 +122,16 @@ var CommentBox = React.createClass({
 
 var CommentList = React.createClass({
   render: function() {
+    var maxVal = 0;
+    this.props.data.map(function(data){
+      if (maxVal < data.score) {
+        maxVal = data.score;
+      };
+    });
     var commentNodes = this.props.data.map(function(comment) {
+      var max = (maxVal === comment.score);
       return (
-        <Comment name={comment.name} history={comment.history} key={comment.id}>
+        <Comment name={comment.name} history={comment.history} key={comment.id} max={max} maxVal={maxVal}>
           {comment.score}
         </Comment>
       );
@@ -155,6 +172,7 @@ var CommentForm = React.createClass({
           className="form-control"
           type="text"
           placeholder="Name"
+          id="nameField"
           value={this.state.name}
           onChange={this.handleAuthorChange}
         />
@@ -165,7 +183,7 @@ var CommentForm = React.createClass({
           value={this.state.score}
           onChange={this.handleTextChange}
         />
-        <input className="btn btn-primary" type="submit" value="Update" />
+        <input className="btn btn-primary pull-right" type="submit" value="Update" />
       </div>
       </form>
     );

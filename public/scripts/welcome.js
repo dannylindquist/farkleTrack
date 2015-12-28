@@ -34,9 +34,7 @@ var Games = React.createClass({
   render: function(){
   	return (
       <div className="commentBox">
-        <h3><small>Scores</small></h3>
-        <CommentForm onCommentSubmit={this.handleCommentSubmit} />
-        <CommentList data={this.state.data} />
+        <p>Hello</p>
       </div>
     );
   }
