@@ -6,6 +6,30 @@ var Score = React.createClass({
   }
 });
 
+var ModalConfirm = React.createClass({
+  render: function(){
+    return(
+      <div className="modal fade" id="myModal" role="dialog">
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <button type="button" className="close" data-dismiss="modal">&times;</button>
+              <h4 className="modal-title">Modal Header</h4>
+            </div>
+            <div className="modal-body">
+              <p>Some text in the modal.</p>
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    );
+  }
+});
+
 var Comment = React.createClass({
   handleClick: function(){
     this.props.setName(this.props.name);
@@ -88,7 +112,7 @@ var CommentBox = React.createClass({
     setInterval(this.loadCommentsFromServer, this.props.pollInterval);
   },
   handleSubmit: function(e) {
-    e.preventDefault();
+    //e.preventDefault();
     this.setState({data: []});
     $.ajax({
       url: '/api/clear',
@@ -113,12 +137,13 @@ var CommentBox = React.createClass({
         <form className="form-inline" onSubmit={this.handleSubmit}>
           <h1>Scores
           <small>
-            <button className="pull-right btn btn-small btn-danger" type="submit">Clear</button>
+            <ClearModal confirmClicked={this.handleSubmit}/>
           </small>
           </h1>
         </form>
         <CommentForm onCommentSubmit={this.handleCommentSubmit} name={this.state.name} textChange={this.handleTextChange} />
         <CommentList data={this.state.data} setText={this.handleTextChange}/>
+        <ModalConfirm />
       </div>
     );
   }
@@ -195,6 +220,51 @@ var CommentForm = React.createClass({
         <input className="btn btn-primary pull-right" type="submit" value="Update" />
       </div>
       </form>
+    );
+  }
+});
+
+var ClearModal = React.createClass({
+  getInitialState() {
+    return { showModal: false };
+  },
+  close() {
+    this.setState({ showModal: false });
+  },
+  open() {
+    this.setState({ showModal: true });
+  },
+  confirmed() {
+    this.props.confirmClicked();
+    this.setState({ showModal: false});
+  },
+  render() {
+    var Button  = ReactBootstrap.Button;
+    var Modal = ReactBootstrap.Modal;  
+
+    return (
+      <div className="pull-right">
+        <Button
+          bsStyle="danger"
+          bsSize="small"
+          onClick={this.open}
+        >
+          Clear
+        </Button>
+
+        <Modal show={this.state.showModal} onHide={this.close}>
+          <Modal.Header closeButton>
+            <Modal.Title>Clear Scores?</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <h4><small>Pressing okay will clear this game. Are you sure?</small></h4>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button onClick={this.confirmed} bsStyle="danger">Clear</Button>
+            <Button onClick={this.close}>Close</Button>
+          </Modal.Footer>
+        </Modal>
+      </div>
     );
   }
 });
