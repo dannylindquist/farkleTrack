@@ -6,30 +6,6 @@ var Score = React.createClass({
   }
 });
 
-var ModalConfirm = React.createClass({
-  render: function(){
-    return(
-      <div className="modal fade" id="myModal" role="dialog">
-        <div className="modal-dialog">
-          <div className="modal-content">
-            <div className="modal-header">
-              <button type="button" className="close" data-dismiss="modal">&times;</button>
-              <h4 className="modal-title">Modal Header</h4>
-            </div>
-            <div className="modal-body">
-              <p>Some text in the modal.</p>
-            </div>
-            <div className="modal-footer">
-              <button type="button" className="btn btn-default" data-dismiss="modal">Close</button>
-            </div>
-          </div>
-          
-        </div>
-      </div>
-    );
-  }
-});
-
 var Comment = React.createClass({
   handleClick: function(){
     this.props.setName(this.props.name);
@@ -52,7 +28,11 @@ var Comment = React.createClass({
     } else {
       behindVal = ' (-' + (Number(this.props.maxVal) - Number(this.props.children)) + ')';
     }
-
+    if (this.props.showHistory) {
+      var displayHistory = scores;
+    } else {
+      var displayHistory = scores[0];
+    }
     return (
       <div className="comment col-md-2 col-sm-4 col-xs-6">
         <h2 className={winner} onClick={this.handleClick}>
@@ -63,7 +43,7 @@ var Comment = React.createClass({
           <h2><small>{this.props.children.toString()}<sub>{behindVal}</sub></small></h2>
         </div>
         <blockquote>
-          {scores}
+          {displayHistory}
         </blockquote>
       </div>
     );
@@ -105,7 +85,7 @@ var CommentBox = React.createClass({
     });
   },
   getInitialState: function() {
-    return {data: [], name: ''};
+    return {data: [], name: '', showHistory: false};
   },
   componentDidMount: function() {
     this.loadCommentsFromServer();
@@ -131,19 +111,21 @@ var CommentBox = React.createClass({
   handleTextChange: function(input) {
     this.setState({name: input});
   },
+  handleShowHistory: function(selected) {
+    this.setState({showHistory: selected});
+  },
   render: function() {
     return (
       <div className="commentBox">
         <form className="form-inline" onSubmit={this.handleSubmit}>
           <h1>Scores
           <small>
-            <ClearModal confirmClicked={this.handleSubmit}/>
+            <SettingsModal clearScores={this.handleSubmit} showHistory={this.state.showHistory} showHistoryChanged={this.handleShowHistory} />
           </small>
           </h1>
         </form>
         <CommentForm onCommentSubmit={this.handleCommentSubmit} name={this.state.name} textChange={this.handleTextChange} />
-        <CommentList data={this.state.data} setText={this.handleTextChange}/>
-        <ModalConfirm />
+        <CommentList data={this.state.data} setText={this.handleTextChange} showHistory={this.state.showHistory} />
       </div>
     );
   }
@@ -158,13 +140,14 @@ var CommentList = React.createClass({
       };
     });
     var textSet = this.props.setText;
+    var showHistory = this.props.showHistory;
     var commentNodes = this.props.data.map(function(comment) {
       var setParentName = function(value){
         textSet(value);
       };
       var max = (maxVal === comment.score);
       return (
-        <Comment name={comment.name} history={comment.history} key={comment.id} max={max} maxVal={maxVal} setName={setParentName}>
+        <Comment name={comment.name} showHistory={showHistory} history={comment.history} key={comment.id} max={max} maxVal={maxVal} setName={setParentName}>
           {comment.score}
         </Comment>
       );
@@ -224,6 +207,54 @@ var CommentForm = React.createClass({
   }
 });
 
+var SettingsModal = React.createClass({
+  getInitialState() {
+    return { showModal: false };
+  },
+  close() {
+    this.setState({ showModal: false });
+  },
+  open() {
+    this.setState({ showModal: true });
+  },
+  handlClearScores() {
+    this.props.clearScores();
+  },
+  handleShowHistoryChanged(e) {
+    this.props.showHistoryChanged(!Boolean(this.props.showHistory));
+  },
+  render() {
+    var Button  = ReactBootstrap.Button;
+    var Modal = ReactBootstrap.Modal; 
+    var Input = ReactBootstrap.Input; 
+
+    return (
+      <div className="pull-right">
+        <Button
+          bsStyle="primary"
+          bsSize="small"
+          onClick={this.open}
+        >
+          Settings
+        </Button>
+
+        <Modal show={this.state.showModal} onHide={this.close}>
+          <Modal.Header closeButton>
+            <Modal.Title>Game Settings</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Input type="checkbox" label="ShowHistory" checked={this.props.showHistory} onChange={this.handleShowHistoryChanged} />
+            Clear Score: <ClearModal clearConfirmed={this.handlClearScores} />
+          </Modal.Body>
+          <Modal.Footer> 
+            <Button onClick={this.close} bsStyle="default">Close</Button>
+          </Modal.Footer>
+        </Modal>
+      </div>
+    );
+  }
+});
+
 var ClearModal = React.createClass({
   getInitialState() {
     return { showModal: false };
@@ -235,7 +266,7 @@ var ClearModal = React.createClass({
     this.setState({ showModal: true });
   },
   confirmed() {
-    this.props.confirmClicked();
+    this.props.clearConfirmed();
     this.setState({ showModal: false});
   },
   render() {
@@ -243,7 +274,7 @@ var ClearModal = React.createClass({
     var Modal = ReactBootstrap.Modal;  
 
     return (
-      <div className="pull-right">
+      <div className="">
         <Button
           bsStyle="danger"
           bsSize="small"
