@@ -194,7 +194,8 @@ var CommentForm = React.createClass({
         />
         <input
           className="form-control"
-          type="number"
+          type="text"
+          pattern="\d*"
           placeholder="Score..."
           id="scoreField"
           value={this.state.score}
