@@ -6,7 +6,7 @@ var Score = React.createClass({
   }
 });
 
-var Comment = React.createClass({
+var Player = React.createClass({
   handleClick: function(){
     this.props.setName(this.props.name);
     document.getElementById('scoreField').focus();
@@ -21,7 +21,7 @@ var Comment = React.createClass({
     } else {
       var scores = "0"
     }
-    var winner = 'commentAuthor';
+    var winner = 'playerName';
     var behindVal = '';
     if (this.props.max) {
       winner += ' text-success';
@@ -34,7 +34,7 @@ var Comment = React.createClass({
       var displayHistory = scores[0];
     }
     return (
-      <div className="comment col-md-2 col-sm-4 col-xs-6">
+      <div className="player col-md-2 col-sm-4 col-xs-6">
         <h2 className={winner} onClick={this.handleClick}>
           {this.props.name}
         </h2>
@@ -50,8 +50,8 @@ var Comment = React.createClass({
   }
 });
 
-var CommentBox = React.createClass({
-  loadCommentsFromServer: function() {
+var GameBox = React.createClass({
+  loadPlayersFromServer: function() {
     $.ajax({
       url: this.props.url,
       dataType: 'json',
@@ -64,22 +64,22 @@ var CommentBox = React.createClass({
       }.bind(this)
     });
   },
-  handleCommentSubmit: function(comment) {
-    var comments = this.state.data;
+  handleScoreSubmit: function(player) {
+    var players = this.state.data;
     
-    comment.id = Date.now();
-    var newComments = comments.concat([comment]);
+    player.id = Date.now();
+    var newComments = players.concat([player]);
     this.setState({data: newComments});
     $.ajax({
       url: this.props.url,
       dataType: 'json',
       type: 'POST',
-      data: comment,
+      data: player,
       success: function(data) {
         this.setState({data: data, name: ''});
       }.bind(this),
       error: function(xhr, status, err) {
-        this.setState({data: comments, name: ''});
+        this.setState({data: players, name: ''});
         console.error(this.props.url, status, err.toString());
       }.bind(this)
     });
@@ -88,11 +88,12 @@ var CommentBox = React.createClass({
     return {data: [], name: '', showHistory: false};
   },
   componentDidMount: function() {
-    this.loadCommentsFromServer();
-    setInterval(this.loadCommentsFromServer, this.props.pollInterval);
+    this.loadPlayersFromServer();
+    setInterval(this.loadPlayersFromServer, this.props.pollInterval);
   },
   handleSubmit: function(e) {
     //e.preventDefault();
+    var players = this.state.data;
     this.setState({data: []});
     $.ajax({
       url: '/api/clear',
@@ -103,7 +104,7 @@ var CommentBox = React.createClass({
         this.setState({data: data});
       }.bind(this),
       error: function(xhr, status, err) {
-        this.setState({data: comments});
+        this.setState({data: players});
         console.error(this.props.url, status, err.toString());
       }.bind(this)
     });
@@ -116,7 +117,7 @@ var CommentBox = React.createClass({
   },
   render: function() {
     return (
-      <div className="commentBox">
+      <div className="GameBox">
         <form className="form-inline" onSubmit={this.handleSubmit}>
           <h1>Scores
           <small>
@@ -124,14 +125,14 @@ var CommentBox = React.createClass({
           </small>
           </h1>
         </form>
-        <CommentForm onCommentSubmit={this.handleCommentSubmit} name={this.state.name} textChange={this.handleTextChange} />
-        <CommentList data={this.state.data} setText={this.handleTextChange} showHistory={this.state.showHistory} />
+        <ScoreForm onCommentSubmit={this.handleScoreSubmit} name={this.state.name} textChange={this.handleTextChange} />
+        <PlayerList data={this.state.data} setText={this.handleTextChange} showHistory={this.state.showHistory} />
       </div>
     );
   }
 });
 
-var CommentList = React.createClass({
+var PlayerList = React.createClass({
   render: function() {
     var maxVal = 0;
     this.props.data.map(function(data){
@@ -141,26 +142,26 @@ var CommentList = React.createClass({
     });
     var textSet = this.props.setText;
     var showHistory = this.props.showHistory;
-    var commentNodes = this.props.data.map(function(comment) {
+    var playerNodes = this.props.data.map(function(player) {
       var setParentName = function(value){
         textSet(value);
       };
-      var max = (maxVal === comment.score);
+      var max = (maxVal === player.score);
       return (
-        <Comment name={comment.name} showHistory={showHistory} history={comment.history} key={comment.id} max={max} maxVal={maxVal} setName={setParentName}>
-          {comment.score}
-        </Comment>
+        <Player name={player.name} showHistory={showHistory} history={player.history} key={player.id} max={max} maxVal={maxVal} setName={setParentName}>
+          {player.score}
+        </Player>
       );
     });
     return (
-      <div className="commentList row">
-        {commentNodes}
+      <div className="playerList row">
+        {playerNodes}
       </div>
     );
   }
 });
 
-var CommentForm = React.createClass({
+var ScoreForm = React.createClass({
   getInitialState: function() {
     return {score: '', history:[]};
   },
@@ -182,7 +183,7 @@ var CommentForm = React.createClass({
   },
   render: function() {
     return (
-      <form className="commentForm form-inline" onSubmit={this.handleSubmit}>
+      <form className="ScoreForm form-inline" onSubmit={this.handleSubmit}>
       <div className="form-group">
         <input
           className="form-control"
@@ -224,6 +225,10 @@ var SettingsModal = React.createClass({
   handleShowHistoryChanged(e) {
     this.props.showHistoryChanged(!Boolean(this.props.showHistory));
   },
+  handleChangeRoom() {
+    document.cookie = 'roomName=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    location.reload(true);
+  },
   render() {
     var Button  = ReactBootstrap.Button;
     var Modal = ReactBootstrap.Modal; 
@@ -245,7 +250,8 @@ var SettingsModal = React.createClass({
           </Modal.Header>
           <Modal.Body>
             <Input type="checkbox" label="ShowHistory" checked={this.props.showHistory} onChange={this.handleShowHistoryChanged} />
-            Clear Score: <ClearModal clearConfirmed={this.handlClearScores} />
+            <Button onClick={this.handleChangeRoom} bsStyle="default">Change Room</Button>
+            <ClearModal clearConfirmed={this.handlClearScores} />
           </Modal.Body>
           <Modal.Footer> 
             <Button onClick={this.close} bsStyle="default">Close</Button>
@@ -302,6 +308,6 @@ var ClearModal = React.createClass({
 });
 
 ReactDOM.render(
-  <CommentBox url="/api/scores" pollInterval={2000} />,
+  <GameBox url="/api/scores" pollInterval={2000} />,
   document.getElementById('content')
 );
