@@ -18,7 +18,6 @@ app.use(morgan('dev'));
 
 app.get('/', function(req, res) {
   var cookies = String(req.cookies.roomName) == 'undefined' ? '' : req.cookies.roomName;
-  console.log(req.cookies.roomName);
   if(cookies === '') {
     res.sendFile(path.join(__dirname, 'app/welcome.html'));
   } else {

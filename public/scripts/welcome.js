@@ -2,7 +2,7 @@ var Welcome = React.createClass({
   render: function() {
     return (
       <div className="text-default row">
-        <div className="col-md-6 col-xs-8 col-sm-6 col-sm-offset-3 col-xs-offset-2 col-md-offset-3 well">
+        <div className="form-login col-md-6 col-md-offset-3 col-sm-6 col-sm-offset-3 well">
           <h1 className="text-center">Scoreboard</h1>
           <GameLogin />
         </div>

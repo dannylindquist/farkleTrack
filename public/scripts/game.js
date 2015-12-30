@@ -34,7 +34,7 @@ var Player = React.createClass({
       var displayHistory = scores[0];
     }
     return (
-      <div className="player col-md-2 col-sm-4 col-xs-6">
+      <div className="player col-md-2 col-sm-4 col-xs-6 clearfix">
         <h2 className={winner} onClick={this.handleClick}>
           {this.props.name}
         </h2>
